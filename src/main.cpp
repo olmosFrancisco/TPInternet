@@ -3,30 +3,51 @@
 #include <UniversalTelegramBot.h>
 #include <ThingSpeak.h>
 
-// --- INCLUSIONES DE DHT ---
-#include <DHT.h>   // Librería principal del sensor DHT
-// ...
-DHT dht(pinDHT, DHTTYPE); // Objeto creado correctamente
+// --- INCLUSIONES DE BIBLIOTECAS (CORREGIDO) ---
+// Estas bibliotecas son necesarias para el DHT y el Display
+#include <Wire.h>                  // --- CORREGIDO --- Para la comunicación I2C del display
+#include <Adafruit_Sensor.h>       // --- CORREGIDO --- Requerido por la biblioteca DHT
+#include <DHT.h>
+#include <Adafruit_SH110X.h>      // --- CORREGIDO --- La biblioteca para tu display (SH1106/SH110X)
 
-// --- DEFINICIONES DE DHT ---
-#define DHTTYPE DHT22 // O DHT11, dependiendo del sensor que uses
-const int pinDHT = 33; // Sensor H y T
-DHT dht(pinDHT, DHTTYPE); // Crea el objeto DHT
+
+// --- DEFINICIONES DE PINES Y CONSTANTES (CORREGIDO) ---
+// Todas las definiciones DEBEN ir antes de crear los objetos
+
+// Pines de LEDs
+const int pinLEDAzul = 2;
+const int pinLEDVerde = 23;
+
+// Pines de Sensores
+const int pinDHT = 33;      // Sensor H y T
+const int pinADC = 32;      // Potenciometro
+
+// Pines del Display I2C
+const int pinSCL = 22;      // display
+const int pinSDA = 21;      // display
+
+// Constantes del Sensor DHT
+#define DHTTYPE DHT22       // Define el TIPO de sensor
+// --- FIN DE LA SECCIÓN MOVIDA ---
+
+
+// --- CREACIÓN DE OBJETOS (CORREGIDO) ---
+// Ahora que los pines están definidos, podemos crear los objetos
+DHT dht(pinDHT, DHTTYPE); // Objeto DHT
+
+// --- CORREGIDO --- 
+// Objeto del display. SH1106G es el más común para 1.3" 128x64
+// El -1 significa que no usamos pin de Reset.
+Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &Wire, -1);
+
+
+// --- CONFIGURACIÓN DE RED Y BOT ---
 const char* ssid = "mi wifi";
 const char* password = "contraseña";
 const char* botToken = "7959938424:AAE_4uKccKkv_ZgOWJ9gbgkmisJK8MN9lXI";
 const unsigned long SCAN_TIME = 1000;
 
-const int pinLEDAzul = 2;
-const int pinLEDVerde = 23;
-const int pinDHT = 33; //Sensor H y T
-const int pinADC = 32; // Potenciometro
-const int pinSCL = 22; //display
-const int pinSDA = 21; //display
-
-
 //se necesita cifrar la comunicación porque telegram trabaja con https
-
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(botToken, secured_client);
 unsigned long previous;
@@ -48,8 +69,8 @@ void handleMessages(int n){
             // Fila 3: Lectura de Sensores
             json += "[\"Leer Temp/Hum\", \"Leer Potenciometro\"],";
             // Fila 4: Comandos de Display
-            json += "[\"Estado Verde\", \"Estado Azul\", \"Estado Pot\"]";
-
+            json += "[\"Estado Verde\", \"Estado Azul\", \"Estado Pot\"],"; // --- CORREGIDO --- Faltaba una coma aquí
+            // Fila 5: Comandos de Display
             json += "[\"Estado sensor\",\"Enviar HyT\"]";
             json += "]";
       //manda como texto lo que dice el boton json por lo que se debe cambiar las opciones
@@ -59,20 +80,22 @@ void handleMessages(int n){
       bot.sendMessage(chat_id, "Chat iniciado! \n Comandos /ledOn: enciende LED \n /ledOff: apagar LED");
       
     }
+    // --- CORREGIDO --- Nombres de variables (pinLEDVerde en lugar de pinLED23)
     else if(text == "Verde ON" || text == "led23on"){
-      digitalWrite(pinLED23, HIGH);
+      digitalWrite(pinLEDVerde, HIGH);
       bot.sendMessage(chat_id, "\n LED verde encendido");
     }
     else if(text == "Verde OFF" || text == "led23off"){
-      digitalWrite(pinLED23, LOW);
+      digitalWrite(pinLEDVerde, LOW);
       bot.sendMessage(chat_id, "\n LED verde apagado");
     }
+    // --- CORREGIDO --- Nombres de variables (pinLEDAzul en lugar de pinLED2)
     else if(text == "Azul ON" || text == "led2on"){
-      digitalWrite(pinLED2, HIGH);
+      digitalWrite(pinLEDAzul, HIGH);
       bot.sendMessage(chat_id, "\n LED azul encendido");
     }
     else if(text == "Azul OFF" || text == "led2off"){
-      digitalWrite(pinLED2, LOW);
+      digitalWrite(pinLEDAzul, LOW);
       bot.sendMessage(chat_id, "\n LED azul apagado");
     }
     else if(text == "Leer Temp/Hum" || text == "/dht22"){
@@ -93,19 +116,19 @@ void handleMessages(int n){
     }
 
     else if(text == "Enviar HyT" || text == "/platiot"){
-      
+      // ... (código pendiente)
     }
 
     else if(text == "Estado Verde" || text == "/displayled23"){
             
             // 1. Leer el estado actual del pin
-            int estado = digitalRead(pinLEDVerde);
+            int estado = digitalRead(pinLEDVerde); // --- CORREGIDO --- (era pinLEDVerde)
             String mensaje = (estado == HIGH) ? "LED Verde: ON" : "LED Verde: OFF";
 
             // 2. Limpiar la pantalla y configurar el texto
             display.clearDisplay();
             display.setTextSize(2); // Usar tamaño 2 para que sea más visible
-            display.setTextColor(SSD1306_WHITE);
+            display.setTextColor(SH110X_WHITE); // --- CORREGIDO --- (era SSD1306_WHITE)
             display.setCursor(0, 0); // Posiciona el cursor
 
             // 3. Escribir el mensaje de estado en el buffer
@@ -123,13 +146,13 @@ void handleMessages(int n){
     else if(text == "Estado Azul" || text == "/displayled2"){
             
             // 1. Leer el estado actual del pin
-            int estado = digitalRead(pinLEDAzul);
+            int estado = digitalRead(pinLEDAzul); // --- CORREGIDO --- (era pinLEDAzul)
             String mensaje = (estado == HIGH) ? "LED Azul: ON" : "LED Azul: OFF";
 
             // 2. Limpiar la pantalla y configurar el texto
             display.clearDisplay();
             display.setTextSize(2); // Tamaño 2 (más visible)
-            display.setTextColor(SSD1306_WHITE);
+            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
             display.setCursor(0, 0); 
 
             // 3. Escribir el mensaje de estado en el buffer
@@ -160,7 +183,7 @@ void handleMessages(int n){
             // 4. Limpiar la pantalla y configurar el texto
             display.clearDisplay();
             display.setTextSize(1);
-            display.setTextColor(SSD1306_WHITE);
+            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
             display.setCursor(0, 0); 
             display.println("--- POTENCIOMETRO ---");
 
@@ -190,7 +213,7 @@ void handleMessages(int n){
                 // Manejo de error en el OLED
                 display.clearDisplay();
                 display.setTextSize(2);
-                display.setTextColor(SSD1306_WHITE);
+                display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
                 display.setCursor(0, 0);
                 display.println("ERROR!");
                 display.println("Fallo DHT22");
@@ -207,7 +230,7 @@ void handleMessages(int n){
             // 4. Limpiar la pantalla y configurar el texto
             display.clearDisplay();
             display.setTextSize(1);
-            display.setTextColor(SSD1306_WHITE);
+            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
             display.setCursor(0, 0); 
             display.println("--- DHT22 ---");
 
@@ -255,18 +278,29 @@ void setup() {
   Serial.println("Direccion IP: "+ WiFi.localIP().toString());
 
   ThingSpeak.begin(secured_client);
+  
   // INICIALIZAR I2C CON PINES PERSONALIZADOS
   Wire.begin(pinSDA, pinSCL); 
 
-  // INICIALIZAR LA PANTALLA
-    if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { // 0x3C es la dirección I2C común
-      Serial.println(F("Error: No se pudo encontrar el display SSD1306."));
-      // Si no se encuentra, detiene la ejecución 
-      for (;;);
+  // --- CORREGIDO --- Inicialización del display SH110X
+  if (!display.begin(0x3C, true)) { // 0x3C es la dirección I2C común, 'true' para resetear
+    Serial.println(F("Error: No se pudo encontrar el display SH110X."));
+    // Si no se encuentra, detiene la ejecución 
+    for (;;);
   }
+  // --- FIN CORRECCIÓN DISPLAY ---
 
+  // Limpiar display al iniciar
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SH110X_WHITE);
+  display.setCursor(0,0);
+  display.println("Display OK!");
+  display.display();
+  delay(1000);
+
+  // Inicializar el sensor DHT
   dht.begin();
-
 }
 
 
@@ -285,5 +319,5 @@ void loop() {
     }
 
     previous = millis();
-  }  
+  }
 }
