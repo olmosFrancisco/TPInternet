@@ -45,7 +45,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &Wire, -1);
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
 const char* botToken = "8312206932:AAHm2N1lDyhAjhgEXM2IrMaXnwBy7jp8t-k";
-const unsigned long SCAN_TIME = 1000;
+const unsigned long SCAN_TIME = 500;
 
 //se necesita cifrar la comunicación porque telegram trabaja con https
 WiFiClientSecure secured_client;
