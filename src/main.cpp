@@ -77,13 +77,13 @@ void handleMessages(int n){
       bot.sendMessageWithReplyKeyboard(chat_id, "Elija una opción", "", json);
       //mensaje de bienvenida + mostrar opciones de MENU:
       //el mensaje va para un chat_id concreto
-      bot.sendMessage(chat_id, "Chat iniciado! \n Comandos /ledOn: enciende LED \n /ledOff: apagar LED");
       
     }
     // --- CORREGIDO --- Nombres de variables (pinLEDVerde en lugar de pinLED23)
     else if(text == "Verde ON" || text == "/led23on"){
       digitalWrite(pinLEDVerde, HIGH);
       bot.sendMessage(chat_id, "\n LED verde encendido");
+      Serial.println("Mensaje recibido: [" + text + "]");
     }
     else if(text == "Verde OFF" || text == "led23off"){
       digitalWrite(pinLEDVerde, LOW);
