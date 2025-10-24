@@ -42,9 +42,9 @@ Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &Wire, -1);
 
 
 // --- CONFIGURACIÓN DE RED Y BOT ---
-const char* ssid = "mi wifi";
-const char* password = "contraseña";
-const char* botToken = "7959938424:AAE_4uKccKkv_ZgOWJ9gbgkmisJK8MN9lXI";
+const char* ssid = "Wokwi-GUEST";
+const char* password = "";
+const char* botToken = "8312206932:AAHm2N1lDyhAjhgEXM2IrMaXnwBy7jp8t-k";
 const unsigned long SCAN_TIME = 1000;
 
 //se necesita cifrar la comunicación porque telegram trabaja con https
@@ -81,7 +81,7 @@ void handleMessages(int n){
       
     }
     // --- CORREGIDO --- Nombres de variables (pinLEDVerde en lugar de pinLED23)
-    else if(text == "Verde ON" || text == "led23on"){
+    else if(text == "Verde ON" || text == "/led23on"){
       digitalWrite(pinLEDVerde, HIGH);
       bot.sendMessage(chat_id, "\n LED verde encendido");
     }
@@ -90,11 +90,11 @@ void handleMessages(int n){
       bot.sendMessage(chat_id, "\n LED verde apagado");
     }
     // --- CORREGIDO --- Nombres de variables (pinLEDAzul en lugar de pinLED2)
-    else if(text == "Azul ON" || text == "led2on"){
+    else if(text == "Azul ON" || text == "/led2on"){
       digitalWrite(pinLEDAzul, HIGH);
       bot.sendMessage(chat_id, "\n LED azul encendido");
     }
-    else if(text == "Azul OFF" || text == "led2off"){
+    else if(text == "Azul OFF" || text == "/led2off"){
       digitalWrite(pinLEDAzul, LOW);
       bot.sendMessage(chat_id, "\n LED azul apagado");
     }
