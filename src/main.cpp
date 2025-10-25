@@ -52,6 +52,10 @@ WiFiClientSecure secured_client;
 UniversalTelegramBot bot(botToken, secured_client);
 unsigned long previous;
 
+const char* WriteAPIKey = "KTCSTHIBOLXOP5Q2";     //Write API Key de vuestro canal.
+
+WiFiClient clienteThingSpeak; // <-- ¡Añade esta línea!
+
 void handleMessages(int n){
   for (size_t i = 0; i < n; i++){
     //dame el id de los mensajes nuevos
@@ -116,7 +120,19 @@ void handleMessages(int n){
     }
 
     else if(text == "Enviar HyT" || text == "/platiot"){
-      // ... (código pendiente)
+      float h = dht.readHumidity();
+      float t = dht.readTemperature();
+      if (isnan(h) || isnan(t)) {
+        bot.sendMessage(chat_id, "Error al leer del sensor DHT!");
+        return;
+      }
+      String mensaje = "Temperatura: " + String(t) + " °C\nHumedad: " + String(h) + " %";
+      bot.sendMessage(chat_id, mensaje);
+
+      ThingSpeak.setField (1,t);
+      ThingSpeak.setField (2,h);
+
+      ThingSpeak.writeFields(3132022,WriteAPIKey);
     }
 
     else if(text == "Estado Verde" || text == "/displayled23"){
@@ -301,6 +317,9 @@ void setup() {
 
   // Inicializar el sensor DHT
   dht.begin();
+
+
+  ThingSpeak.begin(clienteThingSpeak); // <-- ¡Línea corregida!  
 }
 
 
