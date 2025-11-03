@@ -193,14 +193,14 @@ void handleMessages(int n){
 
         else if(text == "Estado Azul" || text == "/displayled2"){
         // Mensaje inicial temporal
-        showTempMessage("Consultando Estado LED Azul", "", 1500);
+        showTempMessage("Consultando Estado LED Azul", "", 2000);
 
         // Leer el estado actual del pin
         int estado = digitalRead(pinLEDAzul);
         String mensaje = (estado == HIGH) ? "LED Azul: ON" : "LED Azul: OFF";
 
         // Mostrar el estado en pantalla temporalmente
-        showTempMessage("-- ESTADO LED AZUL --", mensaje, 2000);
+        showTempMessage("-- ESTADO LED AZUL --", mensaje, 4000);
 
         // Confirmación por Telegram y registro en Serial
         bot.sendMessage(chat_id, "Mostrando estado del LED Azul en OLED.");
@@ -209,7 +209,7 @@ void handleMessages(int n){
 
     else if(text == "Estado Pot" || text == "/displaypote"){
         // Mensaje inicial temporal
-        showTempMessage("Consultando Potenciometro", "", 1500);
+        showTempMessage("Consultando Potenciometro", "", 2000);
 
         // Leer valor del ADC y convertir a porcentaje
         int valorADC = analogRead(pinADC);
@@ -220,7 +220,7 @@ void handleMessages(int n){
         String mensaje2 = String(porcentaje) + " %";
 
         // Mostrar el valor en pantalla temporalmente
-        showTempMessage(mensaje1, mensaje2, 2000);
+        showTempMessage(mensaje1, mensaje2, 4000);
 
         // Confirmación por Telegram
         bot.sendMessage(chat_id, "Potenciómetro: " + mensaje2 + " (" + String(valorADC) + " ADC)");
@@ -230,7 +230,7 @@ void handleMessages(int n){
 
         else if(text == "Estado sensor" || text == "/displaydht22"){
         // Mensaje inicial temporal
-        showTempMessage("Consultando Sensor DHT22", "", 1500);
+        showTempMessage("Consultando Sensor DHT22", "", 2000);
 
         // Leer los valores del sensor
         float h = dht.readHumidity();
@@ -248,7 +248,7 @@ void handleMessages(int n){
         String humStr  = "H: " + String(h, 1) + " %";
 
         // Mostrar los valores en pantalla temporalmente
-        showTempMessage("--- DHT22 ---", tempStr + "  " + humStr, 2000);
+        showTempMessage("--- DHT22 ---", tempStr + "  " + humStr, 4000);
 
         // Confirmación por Telegram
         bot.sendMessage(chat_id, "Datos DHT22: " + tempStr + ", " + humStr);
