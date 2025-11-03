@@ -56,6 +56,31 @@ const char* WriteAPIKey = "KTCSTHIBOLXOP5Q2";     //Write API Key de vuestro can
 
 WiFiClient clienteThingSpeak; // <-- ¡Añade esta línea!
 
+// --- FUNCIÓN PARA MANEJAR MENSAJES (CORREGIDO) ---
+
+// Función que muestra un mensaje temporal y vuelve al mensaje de espera
+void showTempMessage(String line1, String line2 = "", int tiempo = 2000) {
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SH110X_WHITE);
+  display.setCursor(0, 0);
+  display.println(line1);
+  if (line2 != "") display.println(line2);
+  display.display();
+
+  delay(tiempo); // espera el tiempo que queramos mostrar el mensaje
+
+  // Vuelve al mensaje de sistema listo
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SH110X_WHITE);
+  display.setCursor(10, 20);
+  display.println(F("Sistema listo"));
+  display.setCursor(2, 35);
+  display.println(F("Esperando comandos..."));
+  display.display();
+}
+
 void handleMessages(int n){
   for (size_t i = 0; i < n; i++){
     //dame el id de los mensajes nuevos
@@ -83,40 +108,55 @@ void handleMessages(int n){
       //el mensaje va para un chat_id concreto
       
     }
-    // --- CORREGIDO --- Nombres de variables (pinLEDVerde en lugar de pinLED23)
-    else if(text == "Verde ON" || text == "/led23on"){
+      else if(text == "Verde ON" || text == "/led23on"){
+      showTempMessage("Encendiendo Luz Verde", "", 1500); // mensaje inicial con 1.5s
       digitalWrite(pinLEDVerde, HIGH);
-      bot.sendMessage(chat_id, "\n LED verde encendido");
+      showTempMessage("Luz Verde Encendida", "", 2000);  // mensaje encendido 2s
+      bot.sendMessage(chat_id, "LED verde encendido");
       Serial.println("Mensaje recibido: [" + text + "]");
     }
+
     else if(text == "Verde OFF" || text == "led23off"){
-      digitalWrite(pinLEDVerde, LOW);
-      bot.sendMessage(chat_id, "\n LED verde apagado");
+    showTempMessage("Apagando Luz Verde", "", 1500);
+    digitalWrite(pinLEDVerde, LOW);
+    showTempMessage("Luz Verde Apagada", "", 2000);
+    bot.sendMessage(chat_id, "LED verde apagado");
+    Serial.println("Mensaje recibido: [" + text + "]");
     }
-    // --- CORREGIDO --- Nombres de variables (pinLEDAzul en lugar de pinLED2)
+
     else if(text == "Azul ON" || text == "/led2on"){
-      digitalWrite(pinLEDAzul, HIGH);
-      bot.sendMessage(chat_id, "\n LED azul encendido");
+        showTempMessage("Encendiendo Luz Azul", "", 1500);
+        digitalWrite(pinLEDAzul, HIGH);
+        showTempMessage("Luz Azul Encendida", "", 2000);
+        bot.sendMessage(chat_id, "LED azul encendido");
+        Serial.println("Mensaje recibido: [" + text + "]");
     }
+
     else if(text == "Azul OFF" || text == "/led2off"){
-      digitalWrite(pinLEDAzul, LOW);
-      bot.sendMessage(chat_id, "\n LED azul apagado");
+        showTempMessage("Apagando Luz Azul", "", 1500);
+        digitalWrite(pinLEDAzul, LOW);
+        showTempMessage("Luz Azul Apagada", "", 2000);
+        bot.sendMessage(chat_id, "LED azul apagado");
+        Serial.println("Mensaje recibido: [" + text + "]");
     }
+
     else if(text == "Leer Temp/Hum" || text == "/dht22"){
-      float h = dht.readHumidity();
-      float t = dht.readTemperature();
-      if (isnan(h) || isnan(t)) {
-        bot.sendMessage(chat_id, "Error al leer del sensor DHT!");
-        return;
-      }
-      String mensaje = "Temperatura: " + String(t) + " °C\nHumedad: " + String(h) + " %";
-      bot.sendMessage(chat_id, mensaje);
+        showTempMessage("Leyendo Temp y Humedad", "", 1500);
+        float h = dht.readHumidity();
+        float t = dht.readTemperature();
+        if (isnan(h) || isnan(t)) {
+            bot.sendMessage(chat_id, "Error al leer del sensor DHT!");
+            return;
+        }
+        showTempMessage("Temp: " + String(t,1) + " C", "Hum: " + String(h,1) + " %", 2000);
+        bot.sendMessage(chat_id, "Temperatura: " + String(t) + " °C\nHumedad: " + String(h) + " %");
     }
 
     else if(text == "Leer Potenciometro" || text == "/pote"){
-      int valorADC = analogRead(pinADC);
-      String mensaje = "Valor ADC del Potenciometro: " + String(valorADC);
-      bot.sendMessage(chat_id, mensaje);
+        showTempMessage("Leyendo Potenciometro", "", 1500);
+        int valorADC = analogRead(pinADC);
+        showTempMessage("Pot: " + String(valorADC), "", 2000);
+        bot.sendMessage(chat_id, "Valor ADC del Potenciometro: " + String(valorADC));
     }
 
     else if(text == "Enviar HyT" || text == "/platiot"){
@@ -137,86 +177,56 @@ void handleMessages(int n){
 
     else if(text == "Estado Verde" || text == "/displayled23"){
             
-            // 1. Leer el estado actual del pin
-            int estado = digitalRead(pinLEDVerde); // --- CORREGIDO --- (era pinLEDVerde)
-            String mensaje = (estado == HIGH) ? "LED Verde: ON" : "LED Verde: OFF";
+      showTempMessage("Consultando Estado...", "", 2000); // mensaje inicial temporal
 
-            // 2. Limpiar la pantalla y configurar el texto
-            display.clearDisplay();
-            display.setTextSize(1); // Usar tamaño 2 para que sea más visible
-            display.setTextColor(SH110X_WHITE); // --- CORREGIDO --- (era SSD1306_WHITE)
-            display.setCursor(0, 0); // Posiciona el cursor
+      // Leer el estado actual del pin
+      int estado = digitalRead(pinLEDVerde);
+      String mensaje = (estado == HIGH) ? "Led Verde: ON" : "Led Verde: OFF";
 
-            // 3. Escribir el mensaje de estado en el buffer
-            display.println("--- ESTADO ---");
-            display.setCursor(0, 20); // Mueve el cursor a la siguiente línea
-            display.println(mensaje);
-            
-            // 4. Mostrar el contenido del buffer en el display
-            display.display();
-            
-            // Opcional: Enviar también la confirmación por Telegram
-            bot.sendMessage(chat_id, "Mostrando estado del LED Verde en OLED.");
+      // Mostrar el estado en pantalla temporalmente
+      showTempMessage("-- ESTADO LED VERDE --", mensaje, 4000);  // mensaje resultado
+
+      // Confirmación por Telegram
+      bot.sendMessage(chat_id, "Mostrando estado del LED Verde en OLED.");
+      Serial.println("Mensaje recibido: [" + text + "]");
     }
 
-    else if(text == "Estado Azul" || text == "/displayled2"){
-          
-            // 1. Leer el estado actual del pin
-            int estado = digitalRead(pinLEDAzul); // --- CORREGIDO --- (era pinLEDAzul)
-            String mensaje = (estado == HIGH) ? "LED Azul: ON" : "LED Azul: OFF";
+        else if(text == "Estado Azul" || text == "/displayled2"){
+        // Mensaje inicial temporal
+        showTempMessage("Consultando Estado LED Azul", "", 1500);
 
-            // 2. Limpiar la pantalla y configurar el texto
-            display.clearDisplay();
-            display.setTextSize(1); // Tamaño 2 (más visible)
-            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
-            display.setCursor(0, 0); 
+        // Leer el estado actual del pin
+        int estado = digitalRead(pinLEDAzul);
+        String mensaje = (estado == HIGH) ? "LED Azul: ON" : "LED Azul: OFF";
 
-            // 3. Escribir el mensaje de estado en el buffer
-            display.println("--- ESTADO ---");
-            display.setCursor(0, 20); 
-            display.println(mensaje);
-            
-            // 4. Mostrar el contenido del buffer en el display
-            display.display();
-            
-            // Opcional: Enviar también la confirmación por Telegram
-            bot.sendMessage(chat_id, "Mostrando estado del LED Azul en OLED.");
+        // Mostrar el estado en pantalla temporalmente
+        showTempMessage("-- ESTADO LED AZUL --", mensaje, 2000);
+
+        // Confirmación por Telegram y registro en Serial
+        bot.sendMessage(chat_id, "Mostrando estado del LED Azul en OLED.");
+        Serial.println("Mensaje recibido: [" + text + "]");
     }
 
     else if(text == "Estado Pot" || text == "/displaypote"){
-            
-            // 1. Leer el valor crudo del ADC (0 a 4095 por defecto en ESP32)
-            int valorADC = analogRead(pinADC);
-            
-            // 2. Convertir el valor a un rango de 0 a 100 (para mejor visualización)
-            // map(value, fromLow, fromHigh, toLow, toHigh)
-            long porcentaje = map(valorADC, 0, 4095, 0, 100);
-            
-            // 3. Crear el mensaje
-            String mensaje1 = "Potenciometro:";
-            String mensaje2 = String(porcentaje) + " %"; // Convierte el número a String
-            
-            // 4. Limpiar la pantalla y configurar el texto
-            display.clearDisplay();
-            display.setTextSize(1);
-            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
-            display.setCursor(0, 0); 
-            display.println("--- POTENCIOMETRO ---");
+        // Mensaje inicial temporal
+        showTempMessage("Consultando Potenciometro", "", 1500);
 
-            // 5. Mostrar los valores en la pantalla
-            display.setTextSize(1); // Aumenta el tamaño para el valor principal
-            display.setCursor(0, 20); 
-            display.println(mensaje1);
-            
-            display.setCursor(0, 40); 
-            display.println(mensaje2);
-            
-            // 6. Mostrar el contenido del buffer en el display
-            display.display();
-            
-            // Opcional: Enviar también la confirmación por Telegram
-            bot.sendMessage(chat_id, "Potenciómetro: " + mensaje2 + " (" + String(valorADC) + " ADC)");
+        // Leer valor del ADC y convertir a porcentaje
+        int valorADC = analogRead(pinADC);
+        long porcentaje = map(valorADC, 0, 4095, 0, 100);
+
+        // Crear mensaje
+        String mensaje1 = "Potenciometro:";
+        String mensaje2 = String(porcentaje) + " %";
+
+        // Mostrar el valor en pantalla temporalmente
+        showTempMessage(mensaje1, mensaje2, 2000);
+
+        // Confirmación por Telegram
+        bot.sendMessage(chat_id, "Potenciómetro: " + mensaje2 + " (" + String(valorADC) + " ADC)");
+        Serial.println("Mensaje recibido: [" + text + "]");
     }
+
 
     else if(text == "Estado Sensor" || text == "/displaydht22"){
             
@@ -450,8 +460,6 @@ void setup() {
   display.println(F("Esperando comandos..."));
   display.display();
 }
-
-
 
 
 void loop() {
