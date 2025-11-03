@@ -228,52 +228,33 @@ void handleMessages(int n){
     }
 
 
-    else if(text == "Estado Sensor" || text == "/displaydht22"){
-            
-            // 1. Leer los valores del sensor
-            float h = dht.readHumidity();
-            float t = dht.readTemperature();
-            
-            // 2. Comprobar si la lectura es válida
-            if (isnan(h) || isnan(t)) {
-                // Manejo de error en el OLED
-                display.clearDisplay();
-                display.setTextSize(1);
-                display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
-                display.setCursor(0, 0);
-                display.println("ERROR!");
-                display.println("Fallo DHT22");
-                display.display();
-                
-                bot.sendMessage(chat_id, "ERROR: No se pudo leer el sensor DHT22.");
-                return; // Sale del bloque para no continuar con valores inválidos
-            }
-            
-            // 3. Formatear los mensajes (usando 1 decimal)
-            String tempStr = "T: " + String(t, 1) + " C";
-            String humStr = "H: " + String(h, 1) + " %";
-            
-            // 4. Limpiar la pantalla y configurar el texto
-            display.clearDisplay();
-            display.setTextSize(1);
-            display.setTextColor(SH110X_WHITE); // --- CORREGIDO ---
-            display.setCursor(0, 0); 
-            display.println("--- DHT22 ---");
+        else if(text == "Estado sensor" || text == "/displaydht22"){
+        // Mensaje inicial temporal
+        showTempMessage("Consultando Sensor DHT22", "", 1500);
 
-            // 5. Mostrar los valores de T y H
-            display.setTextSize(1); // Usar tamaño 2 para los valores principales
-            display.setCursor(0, 16); // Primera línea de valor
-            display.println(tempStr);
-            
-            display.setCursor(0, 40); // Segunda línea de valor
-            display.println(humStr);
-            
-            // 6. Mostrar el contenido del buffer en el display
-            display.display();
-            
-            // Opcional: Enviar también los datos por Telegram
-            bot.sendMessage(chat_id, "Datos DHT22: " + tempStr + ", " + humStr);
+        // Leer los valores del sensor
+        float h = dht.readHumidity();
+        float t = dht.readTemperature();
+
+        // Comprobar si la lectura es válida
+        if (isnan(h) || isnan(t)) {
+            showTempMessage("ERROR!", "Fallo DHT22", 2000);
+            bot.sendMessage(chat_id, "ERROR: No se pudo leer el sensor DHT22.");
+            return;
         }
+
+        // Formatear los mensajes (1 decimal)
+        String tempStr = "T: " + String(t, 1) + " C";
+        String humStr  = "H: " + String(h, 1) + " %";
+
+        // Mostrar los valores en pantalla temporalmente
+        showTempMessage("--- DHT22 ---", tempStr + "  " + humStr, 2000);
+
+        // Confirmación por Telegram
+        bot.sendMessage(chat_id, "Datos DHT22: " + tempStr + ", " + humStr);
+        Serial.println("Mensaje recibido: [" + text + "]");
+    }
+
     else {
       bot.sendMessage(chat_id, "Comando no reconocido");
     }
