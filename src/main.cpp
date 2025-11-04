@@ -42,7 +42,7 @@ Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &Wire, -1);
 
 
 // --- CONFIGURACIÓN DE RED Y BOT ---
-const char* ssid = "Wokwi-GUEST";
+const char* ssid = "CIDS";
 const char* password = "";
 const char* botToken = "8312206932:AAHm2N1lDyhAjhgEXM2IrMaXnwBy7jp8t-k";
 const unsigned long SCAN_TIME = 500;
@@ -229,30 +229,23 @@ void handleMessages(int n){
     }
 
 
-        else if(text == "Estado sensor" || text == "/displaydht22"){
+       else if (text == "Estado sensor" || text == "/displaydht22") {
         // Mensaje inicial temporal
         showTempMessage("Consultando", "Sensor DHT22", 2000);
 
-        // Leer los valores del sensor
+        // Leer valores del sensor
         float h = dht.readHumidity();
         float t = dht.readTemperature();
 
-        // Comprobar si la lectura es válida
+        // Verificar si responde correctamente
         if (isnan(h) || isnan(t)) {
-            showTempMessage("ERROR!", "Fallo DHT22", 2000);
-            bot.sendMessage(chat_id, "ERROR: No se pudo leer el sensor DHT22.");
-            return;
+            showTempMessage("Sensor", "APAGADO", 3000);
+            bot.sendMessage(chat_id, "El sensor DHT22 está APAGADO");
+        } else {
+            showTempMessage("Sensor", "ENCENDIDO", 3000);
+            bot.sendMessage(chat_id, "El sensor DHT22 está ENCENDIDO");
         }
 
-        // Formatear los mensajes (1 decimal)
-        String tempStr = "T: " + String(t, 1) + " C";
-        String humStr  = "H: " + String(h, 1) + " %";
-
-        // Mostrar los valores en pantalla temporalmente
-        showTempMessage("--- DHT22 ---", tempStr + "  " + humStr, 4000);
-
-        // Confirmación por Telegram
-        bot.sendMessage(chat_id, "Datos DHT22: " + tempStr + ", " + humStr);
         Serial.println("Mensaje recibido: [" + text + "]");
     }
 
