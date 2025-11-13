@@ -3,16 +3,14 @@
 #include <UniversalTelegramBot.h>
 #include <ThingSpeak.h>
 
-// --- INCLUSIONES DE BIBLIOTECAS (CORREGIDO) ---
-// Estas bibliotecas son necesarias para el DHT y el Display
-#include <Wire.h>                  // --- CORREGIDO --- Para la comunicación I2C del display
-#include <Adafruit_Sensor.h>       // --- CORREGIDO --- Requerido por la biblioteca DHT
+// --- INCLUSIONES DE BIBLIOTECAS  ---
+#include <Wire.h>                  
+#include <Adafruit_Sensor.h>       
 #include <DHT.h>
-#include <Adafruit_SH110X.h>      // --- CORREGIDO --- La biblioteca para tu display (SH1106/SH110X)
+#include <Adafruit_SH110X.h>      
 
 
-// --- DEFINICIONES DE PINES Y CONSTANTES (CORREGIDO) ---
-// Todas las definiciones DEBEN ir antes de crear los objetos
+// --- DEFINICIONES DE PINES Y CONSTANTES ---
 
 // Pines de LEDs
 const int pinLEDAzul = 2;
@@ -28,21 +26,17 @@ const int pinSDA = 21;      // display
 
 // Constantes del Sensor DHT
 #define DHTTYPE DHT22       // Define el TIPO de sensor
-// --- FIN DE LA SECCIÓN MOVIDA ---
 
 
-// --- CREACIÓN DE OBJETOS (CORREGIDO) ---
-// Ahora que los pines están definidos, podemos crear los objetos
-DHT dht(pinDHT, DHTTYPE); // Objeto DHT
 
-// --- CORREGIDO --- 
-// Objeto del display. SH1106G es el más común para 1.3" 128x64
-// El -1 significa que no usamos pin de Reset.
+// --- CREACIÓN DE OBJETOS ---
+DHT dht(pinDHT, DHTTYPE); //
+
 Adafruit_SH1106G display = Adafruit_SH1106G(128, 64, &Wire, -1);
 
 
 // --- CONFIGURACIÓN DE RED Y BOT ---
-const char* ssid = "CIDS";
+const char* ssid     = "Wokwi-GUEST";
 const char* password = "";
 const char* botToken = "8312206932:AAHm2N1lDyhAjhgEXM2IrMaXnwBy7jp8t-k";
 const unsigned long SCAN_TIME = 500;
@@ -54,9 +48,9 @@ unsigned long previous;
 
 const char* WriteAPIKey = "KTCSTHIBOLXOP5Q2";     //Write API Key de vuestro canal.
 
-WiFiClient clienteThingSpeak; // <-- ¡Añade esta línea!
+WiFiClient clienteThingSpeak;
 
-// --- FUNCIÓN PARA MANEJAR MENSAJES (CORREGIDO) ---
+// --- FUNCIÓN PARA MANEJAR MENSAJES ---
 
 // Función que muestra un mensaje temporal y vuelve al mensaje de espera
 void showTempMessage(String line1, String line2 = "", int tiempo = 2000) {
@@ -69,9 +63,8 @@ void showTempMessage(String line1, String line2 = "", int tiempo = 2000) {
   if (line2 != "") display.println(line2);
   display.display();
 
-  delay(tiempo); // espera el tiempo que queramos mostrar el mensaje
+  delay(tiempo); 
 
-  // Vuelve al mensaje de sistema listo
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SH110X_WHITE);
@@ -85,34 +78,28 @@ void showTempMessage(String line1, String line2 = "", int tiempo = 2000) {
 void handleMessages(int n){
   for (size_t i = 0; i < n; i++){
     //dame el id de los mensajes nuevos
-    String chat_id = bot.messages[i].chat_id; //informativo
+    String chat_id = bot.messages[i].chat_id; 
     //dame todos los mensajes
-    String text = bot.messages[i].text; //contenido de cada mensaje
+    String text = bot.messages[i].text; 
     
     if(text == "/start"){
-      // al estar dentro de una cadena se deben usar los caracteres de escape para las comillas
+    
       String json = "[";
-            // Fila 1: LEDs Verde
             json += "[\"Verde ON\", \"Verde OFF\"],";
-            // Fila 2: LEDs Azul
             json += "[\"Azul ON\", \"Azul OFF\"],";
-            // Fila 3: Lectura de Sensores
             json += "[\"Leer Temp/Hum\", \"Leer Potenciometro\"],";
-            // Fila 4: Comandos de Display
-            json += "[\"Estado Verde\", \"Estado Azul\", \"Estado Pot\"],"; // --- CORREGIDO --- Faltaba una coma aquí
-            // Fila 5: Comandos de Display
+            json += "[\"Estado Verde\", \"Estado Azul\", \"Estado Pot\"],"; 
             json += "[\"Estado sensor\",\"Enviar HyT\"]";
             json += "]";
-      //manda como texto lo que dice el boton json por lo que se debe cambiar las opciones
+      
       bot.sendMessageWithReplyKeyboard(chat_id, "Elija una opción", "", json);
-      //mensaje de bienvenida + mostrar opciones de MENU:
-      //el mensaje va para un chat_id concreto
+  
       
     }
       else if(text == "Verde ON" || text == "/led23on"){
-      showTempMessage("Encendiendo Luz Verde", "", 2000); // mensaje inicial con 1.5s
+      showTempMessage("Encendiendo Luz Verde", "", 2000); 
       digitalWrite(pinLEDVerde, HIGH);
-      showTempMessage("Luz Verde Encendida", "", 4000);  // mensaje encendido 2s
+      showTempMessage("Luz Verde Encendida", "", 4000); 
       bot.sendMessage(chat_id, "LED verde encendido");
       Serial.println("Mensaje recibido: [" + text + "]");
     }
@@ -178,14 +165,14 @@ void handleMessages(int n){
 
     else if(text == "Estado Verde" || text == "/displayled23"){
             
-      showTempMessage("Consultando Estado...", "", 2000); // mensaje inicial temporal
+      showTempMessage("Consultando Estado...", "", 2000); 
 
       // Leer el estado actual del pin
       int estado = digitalRead(pinLEDVerde);
       String mensaje = (estado == HIGH) ? "Led Verde: ON" : "Led Verde: OFF";
 
       // Mostrar el estado en pantalla temporalmente
-      showTempMessage("- ESTADO LED VERDE -", mensaje, 4000);  // mensaje resultado
+      showTempMessage("- ESTADO LED VERDE -", mensaje, 4000); 
 
       // Confirmación por Telegram
       bot.sendMessage(chat_id, "Mostrando estado del LED Verde en OLED.");
@@ -193,51 +180,43 @@ void handleMessages(int n){
     }
 
         else if(text == "Estado Azul" || text == "/displayled2"){
-        // Mensaje inicial temporal
+        
         showTempMessage("Consultando Estado...", "", 2000);
 
-        // Leer el estado actual del pin
+        
         int estado = digitalRead(pinLEDAzul);
         String mensaje = (estado == HIGH) ? "LED Azul: ON" : "LED Azul: OFF";
 
-        // Mostrar el estado en pantalla temporalmente
+       
         showTempMessage("-- ESTADO LED AZUL --", mensaje, 4000);
 
-        // Confirmación por Telegram y registro en Serial
+        
         bot.sendMessage(chat_id, "Mostrando estado del LED Azul en OLED.");
         Serial.println("Mensaje recibido: [" + text + "]");
     }
 
     else if(text == "Estado Pot" || text == "/displaypote"){
-        // Mensaje inicial temporal
+        
         showTempMessage("Consultando", "Potenciometro", 2000);
 
         // Leer valor del ADC y convertir a porcentaje
         int valorADC = analogRead(pinADC);
         long porcentaje = map(valorADC, 0, 4095, 0, 100);
 
-        // Crear mensaje
-        //String mensaje1 = "Potenciometro:";
-        //String mensaje2 = String(porcentaje) + " %";
-
-        // Mostrar el valor en pantalla temporalmente
+        
         showTempMessage("Potenciometro:", String(porcentaje) + " %", 4000);
 
-        // Confirmación por Telegram
+        
          bot.sendMessage(chat_id, "Potenciómetro: " + String(porcentaje) + " % (" + String(valorADC) + " ADC)");
           Serial.println("Mensaje recibido: [" + text + "]");
     }
 
-
        else if (text == "Estado sensor" || text == "/displaydht22") {
-        // Mensaje inicial temporal
+        
         showTempMessage("Consultando", "Sensor DHT22", 2000);
-
-        // Leer valores del sensor
         float h = dht.readHumidity();
         float t = dht.readTemperature();
 
-        // Verificar si responde correctamente
         if (isnan(h) || isnan(t)) {
             showTempMessage("Sensor", "APAGADO", 3000);
             bot.sendMessage(chat_id, "El sensor DHT22 está APAGADO");
@@ -304,14 +283,14 @@ void mostrarInicio() {
   display.drawBitmap(0, 0, logoUTN, 128, 39, SH110X_WHITE);
 
   // --- TEXTO GRUPO ---
-  display.setTextSize(1); // tamaño normal
+  display.setTextSize(1); 
   display.setTextColor(SH110X_WHITE);
   display.setCursor(0, 50); 
   display.println("GRUPO 6 - TP02 IoT");
 
 
   display.display();
-  delay(5000); // Mostrar 5 segundos antes de limpiar
+  delay(5000); 
   display.clearDisplay();
   display.display();
 }
@@ -326,8 +305,8 @@ void mostrarAnimacionEspera(int duracion_ms) {
 
   // --- Texto ---
   String texto = "Esperando...";
-  int textoX = (anchoDisplay - texto.length() * 6) / 2; // 6 px por caracter aprox
-  int textoY = 20; // más arriba para dejar espacio abajo
+  int textoX = (anchoDisplay - texto.length() * 6) / 2; 
+  int textoY = 20; 
 
   // --- Parámetros de los puntos ---
   int numPuntos = 5;
@@ -335,7 +314,7 @@ void mostrarAnimacionEspera(int duracion_ms) {
   int espacio = 12;
   int anchoTotal = (numPuntos - 1) * espacio;
   int xBase = (anchoDisplay - anchoTotal) / 2;
-  int yBase = 45; // más abajo que el texto
+  int yBase = 45; 
 
   unsigned long start = millis();
   int step = 0;
@@ -368,10 +347,11 @@ void mostrarAnimacionEspera(int duracion_ms) {
 
 
 void setup() {
+
   // --- COMUNICACIÓN SERIAL ---
   Serial.begin(115200);
   Serial.println(F("Iniciando sistema..."));
-  
+
 
   // --- CONFIGURACIÓN DE PINES ---
   pinMode(pinLEDAzul, OUTPUT);
@@ -381,9 +361,8 @@ void setup() {
   // --- CONEXIÓN WiFi ---
   Serial.print(F("Conectando a WiFi"));
   WiFi.begin(ssid, password);
-  secured_client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Certificado raíz para HTTPS (Telegram)
+  secured_client.setCACert(TELEGRAM_CERTIFICATE_ROOT); 
 
-  // Esperar hasta conectar
   while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(200);
@@ -400,20 +379,19 @@ void setup() {
 
 
   // --- INICIALIZAR DISPLAY OLED (SH110X) ---
-  // Dirección I2C por defecto: 0x3C
   Wire.begin(pinSDA, pinSCL);
 
   if (!display.begin(0x3C, true)) {
     Serial.println(F("Error: No se pudo inicializar el display SH110X."));
-    while (true); // Detiene la ejecución
+    while (true);
   }
 
   display.clearDisplay();
   display.display();
 
   // --- MENSAJE DE BIENVENIDA ---
-  mostrarInicio();                // Logo + texto inicial
-  mostrarAnimacionEspera(3000);   // Animación de carga (3 segundos)
+  mostrarInicio();               
+  mostrarAnimacionEspera(3000);  
 
 
   // --- INICIALIZAR SENSOR DHT ---
@@ -422,7 +400,7 @@ void setup() {
 
 
   // --- INICIALIZAR THINGSPEAK (CLIENTE PERSONALIZADO) ---
-  ThingSpeak.begin(clienteThingSpeak); // Si usás un cliente diferente
+  ThingSpeak.begin(clienteThingSpeak); 
   Serial.println(F("ThingSpeak inicializado correctamente."));
 
   // --- MENSAJE FINAL: SISTEMA LISTO ---
@@ -439,10 +417,8 @@ void setup() {
 
 void loop() {
   if (millis() - previous > SCAN_TIME ){
-    //dame la cantidad de mensajes nuevo que llegaron desde el ultimo SCAN_TIME
     int n = bot.getUpdates(bot.last_message_received + 1);
     
-    //mientras que haya mensajes nuevos, los manejo
     while(n){
       handleMessages(n);
       n = bot.getUpdates(bot.last_message_received + 1);
